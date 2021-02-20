@@ -3,9 +3,14 @@ package com.in28minutes.rest.webservice.restfulwebservices.users.controller;
 import java.net.URI;
 import java.util.List;
 
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
+
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -35,14 +40,23 @@ public class UserController {
 	}
 
 	@GetMapping("users/{id}")
-	public User retrieveAllUsers(@PathVariable int id) {
+	public EntityModel<User> retrieveAllUsers(@PathVariable int id) {
 
 		User user = usersDAO.findOneUser(id);
 		if (user == null) {
 			throw new UserNotFoundException("id -> " + id);
 		}
 
-		return usersDAO.findOneUser(id);
+		EntityModel<User> resource = EntityModel.of(user);
+		
+		WebMvcLinkBuilder linkTo = linkTo(methodOn(this.getClass()).retrieveAllUsers());
+
+		resource.add(linkTo.withRel("all-users"));
+
+		// HATEOAS
+
+		return resource;
+		
 
 	}
 
